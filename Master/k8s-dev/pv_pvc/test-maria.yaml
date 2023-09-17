@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mariadb-replicaset
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: mariadb
+  template:
+    metadata:
+      labels:
+        app: mariadb
+    spec:
+      containers:
+        - name: mariadb
+          image: mariadb:latest
+          volumeMounts:
+            - name: mariadb-data
+              mountPath: /var/lib/mysql  # MariaDB 데이터 디렉토리 경로
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: playlistdb-scr
+                  key: rootpasswd
+            - name: MYSQL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: playlistdb-scr
+                  key: username
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: playlistdb-scr
+                  key: userpasswd
+            - name: MYSQL_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: playlistdb-scr
+                  key: databasename 
+      volumes:
+        - name: mariadb-data
+          persistentVolumeClaim:
+            claimName: mysql-nfs-pvc  # 위에서 정의한 PVC와 일치시켜야 함
+

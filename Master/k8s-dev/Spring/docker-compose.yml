@@ -1,0 +1,30 @@
+version: '3.8'
+services:
+  backend:
+    image: board-backend:latest
+    ports:
+      - '8101:8101'
+    networks:
+      - backend_network
+    environment:
+      - DB_HOST=db
+    depends_on:
+      - db
+
+  db:
+    image: mysql:8.0.21
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_general_ci
+    volumes:
+      - /home/user1/Spring/k8s_spring_repo/setup_schema.sql:/docker-entrypoint-initdb.d/db_schema_data_setup.sql
+    environment:
+      - MYSQL_ROOT_PASSWORD=user1      
+      - MYSQL_DATABASE=k8s_spring_db
+    ports:
+      - '3306:3306'
+    networks:
+      - backend_network
+
+networks:
+  backend_network:

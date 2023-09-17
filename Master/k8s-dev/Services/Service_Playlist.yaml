@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: playlistdb-svc
+spec:
+  selector:
+    db: mariadb
+  ports:
+    - protocol: TCP
+      port: 3306
+      targetPort: 3306
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: webplaylist-svc
+spec:
+  selector:
+    api: fastapi
+  ports:
+    - protocol: TCP
+      port: 8102
+      targetPort: 8102

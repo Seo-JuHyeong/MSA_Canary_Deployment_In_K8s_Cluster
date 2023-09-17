@@ -1,0 +1,30 @@
+# mysql-nfs-pv.yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: maridb-pv
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: nfs-storage
+  nfs:
+    server: 192.168.20.200 # 실제 NFS 서버 주소로 수정해야 합니다.
+    path: /nfs/playlist_stg
+
+---
+
+# mysql-nfs-pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: maria-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+  storageClassName: nfs-storage

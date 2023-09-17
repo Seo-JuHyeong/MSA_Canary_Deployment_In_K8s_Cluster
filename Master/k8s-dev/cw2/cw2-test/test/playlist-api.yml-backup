@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: playlist-mongodb-api-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: playlist-mongodb-api
+  template:
+    metadata:
+      labels:
+        app: playlist-mongodb-api
+    spec:
+      containers:
+        - name: mongodb
+          image: 192.168.40.200:57777/playlist-api/mongodb:latest
+          ports:
+            - containerPort: 27017
+          volumeMounts:
+            - name: data-volume
+              mountPath: /mongodb/data
+          env:
+            - name: MONGO_INITDB_ROOT_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-secrets
+                  key: MONGO_INITDB_ROOT_USERNAME
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-secrets
+                  key: MONGO_INITDB_ROOT_PASSWORD
+            - name: MONGO_INITDB_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-secrets
+                  key: MONGO_INITDB_DATABASE
+
+        - name: playlist-api
+          image: 192.168.40.200:57777/playlist-api/fastapi:latest
+          ports:
+            - containerPort: 8102
+          env:
+            - name: MONGO_INITDB_ROOT_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-secrets
+                  key: MONGO_INITDB_ROOT_USERNAME
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-secrets
+                  key: MONGO_INITDB_ROOT_PASSWORD
+            - name: MONGO_INITDB_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-secrets
+                  key: MONGO_INITDB_DATABASE
+      volumes:
+        - name: data-volume
+          emptyDir: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: playlist-mongodb-api-service
+spec:
+  selector:
+    app: playlist-mongodb-api
+  ports:
+    - protocol: TCP
+      port: 8102
+      targetPort: 8102
+      nodePort: 30004
+  type: NodePort

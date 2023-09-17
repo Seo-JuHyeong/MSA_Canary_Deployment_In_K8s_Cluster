@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: boardapi
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      api: spring
+  template:
+    metadata:
+      labels:
+        api: spring
+    spec:
+      containers:
+        - name: board-api
+          image: 192.168.40.200:57777/board-api/board-backend:latest
+          ports:
+            - containerPort: 8101

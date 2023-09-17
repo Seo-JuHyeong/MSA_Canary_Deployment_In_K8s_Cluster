@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: boarddb
+spec:
+  serviceName: "boarddb-svc"
+  replicas: 1 
+  selector:
+    matchLabels:
+      db: mysql
+  template:
+    metadata:
+      labels:
+        db: mysql
+    spec:
+      volumes:
+        - name: db-schema-volume
+          secret:
+            secretName: db-schema-secret
+        - name: mysql-nfs-storage
+          persistentVolumeClaim:
+            claimName: mysql-nfs-pvc
+      containers:
+        - name: db
+          image: 192.168.40.200:57777/board-api/board-db:latest
+          ports:
+            - containerPort: 3306
+          volumeMounts:
+            - name: db-schema-volume
+              mountPath: /docker-entrypoint-initdb.d/db_schema_data_setup.sql
+              subPath: setup_schema.sql
+            - name: mysql-nfs-storage
+              mountPath: /var/lib/mysql
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-env
+                  key: MYSQL_ROOT_PASSWORD
+            - name: MYSQL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: db-env
+                  key: MYSQL_USER
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-env
+                  key: MYSQL_PASSWORD
+            - name: MYSQL_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: db-env
+                  key: MYSQL_DATABASE
